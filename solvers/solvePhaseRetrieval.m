@@ -123,7 +123,7 @@
 
 %% -----------------------------START----------------------------------- 
  
-function [sol, outs, opts] = solvePhaseRetrieval(A, At, b0, n, opts)
+function [sol, outs, opts] = solvePhaseRetrieval(A, At, b0, n, opts, x0)
 % Add path to helper functions
 % addpath('util');
 % addpath('initializers');
@@ -134,7 +134,7 @@ if ~exist('opts', 'var')
 end
 
 % If A is a matrix, infer n and At from A
-if isnumeric(A) & ~isempty(A)
+if isnumeric(A) && ~isempty(A)
     n = size(A, 2);
     % Transform matrix into function form
     At = @(x) A' * x;
@@ -148,8 +148,9 @@ validateInput(A, At, b0, n, opts);
 % Check that At is the adjoint/transpose of A
 checkAdjoint(A, At, b0);
 
- 
-x0 = initX(A, At, b0, n, opts); % Initialize x0
+if ~exist('x0', 'var')
+    x0 = initX(A, At, b0, n, opts); % Initialize x0
+end
 % Truncate imaginary components of x0 if working with real values
 if ~opts.isComplex
     x0 = real(x0);
@@ -231,7 +232,7 @@ end
 
 % Check validity of input
 function validateInput(A, At, b0, n, opts)
-if ~isnumeric(A) & (isempty(At)|isempty(n))
+if ~isnumeric(A) && (isempty(At)||isempty(n))
     error('If A is a function handle, then At and n must be provided')
 end
 
@@ -239,7 +240,7 @@ assert(n > 0, 'n must be positive');
 
 assert(isequal(abs(b0), b0), 'b must be real-valued and non-negative');
 
-if ~isnumeric(A) & isnumeric(At)
+if ~isnumeric(A) && isnumeric(At)
     error('If A is a function handle, then At must also be a function handle');
 end
 
